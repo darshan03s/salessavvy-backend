@@ -1,5 +1,6 @@
 package com.salessavvy.backend.entity;
 
+import com.salessavvy.backend.enums.Role;
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -23,7 +24,8 @@ public class User {
     private String password;
 
     @Column(name = "role", nullable = false)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
@@ -33,7 +35,7 @@ public class User {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    public User(String username, String email, String password, String role, Instant createdAt, Instant updatedAt) {
+    public User(String username, String email, String password, Role role, Instant createdAt, Instant updatedAt) {
         this.username = username;
         this.email = email;
         this.password = password;
@@ -77,11 +79,11 @@ public class User {
         this.password = password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
