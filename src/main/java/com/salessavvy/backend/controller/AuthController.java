@@ -39,13 +39,11 @@ public class AuthController {
             cookie.setSecure(false); // Set to true if using HTTPS
             cookie.setPath("/");
             cookie.setMaxAge(3600); // 1 hour
-            cookie.setDomain("localhost");
             response.addCookie(cookie);
-            // Optional but useful
 
-            response.addHeader("Set-Cookie",
-                    String.format("authToken=%s; HttpOnly; Path=/; Max-Age=3600; SameSite=None", token));
-
+            response.setHeader("Set-Cookie",
+                    String.format("authToken=%s; Max-Age=3600; Path=/; HttpOnly; Secure=%s; SameSite=None",
+                            token, false));
 
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("message", "Login successful");
