@@ -47,4 +47,12 @@ public class CartController {
 
         return ResponseEntity.ok(count);
     }
+
+    @GetMapping("/items")
+    public ResponseEntity<Map<String, Object>> getCartItems(HttpServletRequest request) {
+        User user = (User) request.getAttribute("authenticatedUser");
+
+        Map<String, Object> cartItems = cartService.getCartItems(user.getId());
+        return ResponseEntity.ok(cartItems);
+    }
 }
