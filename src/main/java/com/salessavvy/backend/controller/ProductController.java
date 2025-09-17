@@ -55,4 +55,26 @@ public class ProductController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<Map<String, Object>> getProductById(@PathVariable Integer productId) {
+        try {
+            Product product = productService.getProductById(productId);
+
+            Map<String, Object> productDetails = new HashMap<>();
+            productDetails.put("product_id", product.getProductId());
+            productDetails.put("name", product.getName());
+            productDetails.put("description", product.getDescription());
+            productDetails.put("price", product.getPrice());
+            productDetails.put("stock", product.getStock());
+            List<String> images = productService.getProductImages(productId);
+            productDetails.put("images", images);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("product", productDetails);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

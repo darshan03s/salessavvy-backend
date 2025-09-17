@@ -47,4 +47,13 @@ public class ProductService {
         }
         return imageUrls;
     }
+
+    public Product getProductById(Integer productId) {
+        Optional<Product> productOpt = productRepository.findById(productId);
+        if (productOpt.isPresent()) {
+            return productOpt.get();
+        } else {
+            throw new RuntimeException("Product not found");
+        }
+    }
 }
