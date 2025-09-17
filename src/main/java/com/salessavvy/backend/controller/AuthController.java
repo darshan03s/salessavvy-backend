@@ -66,4 +66,21 @@ public class AuthController {
         responseBody.put("username", authenticatedUser.getUsername());
         return ResponseEntity.ok(responseBody);
     }
+
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        User authenticatedUser = (User) request.getAttribute("authenticatedUser");
+        if (authenticatedUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized access"));
+        }
+
+        authService.logout(authenticatedUser.getId());
+        Cookie cookie = new Cookie("authToken", "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false); // Set to true if using HTTPS
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        return ResponseEntity.ok(Map.of("message", "Logout successful"));
+    }
 }
