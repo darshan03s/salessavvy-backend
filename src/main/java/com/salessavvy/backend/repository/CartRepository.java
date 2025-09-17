@@ -1,0 +1,17 @@
+package com.salessavvy.backend.repository;
+
+import com.salessavvy.backend.entity.CartItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface CartRepository extends JpaRepository<CartItem, Integer> {
+    @Query("SELECT c FROM CartItem c WHERE c.user.id = :userId AND c.product.productId = :productId")
+    Optional<CartItem> findByUserAndProduct(int userId, int productId);
+
+    @Query("SELECT COALESCE(SUM(c.quantity), 0) FROM CartItem c WHERE c.user.id = :userId")
+    int countTotalItems(int userId);
+}
