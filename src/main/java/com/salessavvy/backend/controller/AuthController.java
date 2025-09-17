@@ -6,13 +6,10 @@ import java.util.Map;
 import com.salessavvy.backend.dto.LoginRequest;
 import com.salessavvy.backend.entity.User;
 import com.salessavvy.backend.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -55,5 +52,18 @@ public class AuthController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyToken(HttpServletRequest request) {
+        User authenticatedUser = (User) request.getAttribute("authenticatedUser");
+        if (authenticatedUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized access"));
+        }
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("message", "Valid user");
+        responseBody.put("role", authenticatedUser.getRole().name());
+        responseBody.put("username", authenticatedUser.getUsername());
+        return ResponseEntity.ok(responseBody);
     }
 }

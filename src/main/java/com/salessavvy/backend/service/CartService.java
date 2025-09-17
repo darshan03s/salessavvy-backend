@@ -88,10 +88,42 @@ public class CartService {
 
         Map<String, Object> cart = new HashMap<>();
         cart.put("products", products);
-        cart.put("overall_total_price", overallTotalPrice);
+        double roundedPrice = Math.round(overallTotalPrice * 100.0) / 100.0;
+        cart.put("overall_total_price", roundedPrice);
 
         response.put("cart", cart);
 
         return response;
+    }
+
+    public void updateCartItemQuantity(int userId, int productId, int quantity) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        Optional<CartItem> existingItem = cartRepository.findByUserAndProduct(userId, productId);
+
+        if (existingItem.isPresent()) {
+            CartItem cartItem = existingItem.get();
+            if (quantity == 0 || cartItem.getQuantity() + quantity <= 0) {
+                deleteCartItem(userId, productId);
+            } else {
+                int newQuantity = cartItem.getQuantity() + quantity;
+                cartItem.setQuantity(newQuantity);
+                cartRepository.save(cartItem);
+            }
+        }
+    }
+
+    public void deleteCartItem(int userId, int productId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        cartRepository.deleteCartItem(userId, productId);
     }
 }

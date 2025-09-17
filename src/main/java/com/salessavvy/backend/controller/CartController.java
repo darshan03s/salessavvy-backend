@@ -55,4 +55,29 @@ public class CartController {
         Map<String, Object> cartItems = cartService.getCartItems(user.getId());
         return ResponseEntity.ok(cartItems);
     }
+
+    @PutMapping("/update")
+    public ResponseEntity<Void> updateCartItemQuantity(@RequestBody Map<String, Object> request) {
+        String username = (String) request.get("username");
+        int productId = (int) request.get("productId");
+        int quantity = (int) request.get("quantity");
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
+
+        cartService.updateCartItemQuantity(user.getId(), productId, quantity);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteCartItem(@RequestBody Map<String, Object> request) {
+        String username = (String) request.get("username");
+        int productId = (int) request.get("productId");
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
+
+        cartService.deleteCartItem(user.getId(), productId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }
