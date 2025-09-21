@@ -100,7 +100,7 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
-        if (requestURI.startsWith("/api/") && role != Role.CUSTOMER) {
+        if (requestURI.startsWith("/api/") && !requestURI.contains("verify") && !requestURI.contains("logout") && role != Role.CUSTOMER) {
             sendErrorResponse(httpResponse, HttpServletResponse.SC_FORBIDDEN, "Forbidden: Customer access required");
             return;
         }

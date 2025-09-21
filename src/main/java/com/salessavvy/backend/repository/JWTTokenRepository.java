@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 public interface JWTTokenRepository extends JpaRepository<JWTToken, Integer> {
     @Query("SELECT t FROM JWTToken t WHERE t.user.id = :userId")
     JWTToken findByUserId(@Param("userId") int userId);
@@ -14,4 +16,6 @@ public interface JWTTokenRepository extends JpaRepository<JWTToken, Integer> {
     @Modifying
     @Transactional
     void deleteByUserId(Integer userId);
+
+    Optional<JWTToken> findByToken(String token);
 }

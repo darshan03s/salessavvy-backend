@@ -25,6 +25,10 @@ public class ProductService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
     public List<Product> getProductsByCategory(String categoryName) {
         if (categoryName != null && !categoryName.isEmpty()) {
             Optional<Category> categoryOpt = categoryRepository.findByCategoryName(categoryName);
