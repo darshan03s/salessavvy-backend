@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequestMapping("/admin/business")
 public class AdminBusinessController {
 

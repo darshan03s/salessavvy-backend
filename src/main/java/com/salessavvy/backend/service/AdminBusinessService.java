@@ -2,6 +2,7 @@ package com.salessavvy.backend.service;
 
 import com.salessavvy.backend.entity.Order;
 import com.salessavvy.backend.entity.OrderItem;
+import com.salessavvy.backend.enums.OrderStatus;
 import com.salessavvy.backend.repository.OrderItemRepository;
 import com.salessavvy.backend.repository.OrderRepository;
 import com.salessavvy.backend.repository.ProductRepository;
@@ -42,7 +43,7 @@ public class AdminBusinessService {
     }
 
     public Map<String, Object> calculateOverallBusiness() {
-        List<Order> successfulOrders = orderRepository.findAllByStatus("SUCCESS");
+        List<Order> successfulOrders = orderRepository.findByStatus(OrderStatus.valueOf("SUCCESS"));
         BigDecimal totalBusiness = orderRepository.calculateOverallBusiness();
         Map<String, Object> response = calculateBusinessMetrics(successfulOrders);
         response.put("totalBusiness", totalBusiness.doubleValue());
