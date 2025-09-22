@@ -9,10 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
@@ -33,6 +30,7 @@ public class AdminProductController {
     public ResponseEntity<?> getAllProducts() {
         try {
             List<Product> products = productService.getAllProducts();
+            products.sort(Comparator.comparing(Product::getCreatedAt).reversed());
             List<Map<String, Object>> productList = new ArrayList<>();
             for (Product product : products) {
                 Map<String, Object> productDetails = new HashMap<>();

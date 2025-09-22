@@ -8,10 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
@@ -33,6 +30,7 @@ public class ProductController {
                 return ResponseEntity.status(401).body(Map.of("error", "Unauthorized access"));
             }
             List<Product> products = productService.getProductsByCategory(category);
+            products.sort(Comparator.comparing(Product::getCreatedAt).reversed());
             Map<String, Object> response = new HashMap<>();
             Map<String, String> userInfo = new HashMap<>();
             userInfo.put("name", authenticatedUser.getUsername());
