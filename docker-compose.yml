@@ -1,0 +1,37 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: salessavvy-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p\"${MYSQL_ROOT_PASSWORD}\" --silent" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    image: salessavvybackend
+    build: .
+    container_name: salessavvybackend
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://db:3306/salessavvy
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      RZP_KEY_ID: ${RZP_KEY_ID}
+      RZP_KEY_SECRET: ${RZP_KEY_SECRET}
+
+volumes:
+  mysql_data:
