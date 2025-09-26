@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,7 +29,8 @@ public class AuthenticationFilter implements Filter {
     private final AuthService authService;
     private final UserRepository userRepository;
 
-    private static final String ALLOWED_ORIGIN = "http://localhost:5173";
+    @Value("${frontend.allowed-origins}")
+    private String[] ALLOWED_ORIGINS;
 
     private static final String[] UNAUTHENTICATED_PATHS = {
             "/api/users/register",
@@ -48,7 +50,7 @@ public class AuthenticationFilter implements Filter {
             executeFilterLogic(request, response, chain);
         } catch (Exception e) {
             logger.error("Unexpected error in AuthenticationFilter", e);
-            sendErrorResponse((HttpServletResponse) response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+            sendErrorResponse((HttpServletRequest) request, (HttpServletResponse) response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Internal server error");
         }
     }
@@ -69,7 +71,7 @@ public class AuthenticationFilter implements Filter {
 
         // Handle preflight (OPTIONS) requests
         if (httpRequest.getMethod().equalsIgnoreCase("OPTIONS")) {
-            setCORSHeaders(httpResponse);
+            setCORSHeaders(httpRequest, httpResponse);
             return;
         }
 
@@ -77,7 +79,7 @@ public class AuthenticationFilter implements Filter {
         String token = getAuthTokenFromCookies(httpRequest);
         System.out.println(token);
         if (token == null || !authService.validateToken(token)) {
-            sendErrorResponse(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Invalid or missing token");
+            sendErrorResponse(httpRequest, httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Invalid or missing token");
             return;
         }
 
@@ -85,7 +87,7 @@ public class AuthenticationFilter implements Filter {
         String username = authService.extractUsername(token);
         Optional<User> userOptional = userRepository.findByUsername(username);
         if (userOptional.isEmpty()) {
-            sendErrorResponse(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: User not found");
+            sendErrorResponse(httpRequest, httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: User not found");
             return;
         }
 
@@ -96,12 +98,12 @@ public class AuthenticationFilter implements Filter {
 
         // Role-based access control
         if (requestURI.startsWith("/admin/") && role != Role.ADMIN) {
-            sendErrorResponse(httpResponse, HttpServletResponse.SC_FORBIDDEN, "Forbidden: Admin access required");
+            sendErrorResponse(httpRequest, httpResponse, HttpServletResponse.SC_FORBIDDEN, "Forbidden: Admin access required");
             return;
         }
 
         if (requestURI.startsWith("/api/") && !requestURI.contains("verify") && !requestURI.contains("logout") && role != Role.CUSTOMER) {
-            sendErrorResponse(httpResponse, HttpServletResponse.SC_FORBIDDEN, "Forbidden: Customer access required");
+            sendErrorResponse(httpRequest, httpResponse, HttpServletResponse.SC_FORBIDDEN, "Forbidden: Customer access required");
             return;
         }
 
@@ -110,16 +112,23 @@ public class AuthenticationFilter implements Filter {
         chain.doFilter(request, response);
     }
 
-    private void setCORSHeaders(HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+    private void setCORSHeaders(HttpServletRequest request, HttpServletResponse response) {
+        String origin = request.getHeader("Origin");
+
+        // Check if the request's origin is in your allowed origins list
+        if (origin != null && Arrays.asList(ALLOWED_ORIGINS).contains(origin)) {
+            response.setHeader("Access-Control-Allow-Origin", origin);
+        }
+
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private void sendErrorResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        setCORSHeaders(response);
+
+    private void sendErrorResponse(HttpServletRequest request, HttpServletResponse response, int statusCode, String message) throws IOException {
+        setCORSHeaders(request, response);
         response.setStatus(statusCode);
         response.getWriter().write(message);
     }
