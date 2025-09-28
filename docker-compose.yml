@@ -33,6 +33,7 @@ services:
       RZP_KEY_ID: ${RZP_KEY_ID}
       RZP_KEY_SECRET: ${RZP_KEY_SECRET}
       FRONTEND_ALLOWED_ORIGINS: ${FRONTEND_ALLOWED_ORIGINS}
+      COOKIE_SECURE: ${COOKIE_SECURE}
 
 volumes:
   mysql_data:

@@ -39,7 +39,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public String createOrder(int userId, BigDecimal totalAmount, List<OrderItem> cartItems) throws RazorpayException {
+    public String createOrder(int userId, BigDecimal totalAmount) throws RazorpayException {
         RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
 
         var orderRequest = new JSONObject();
@@ -98,16 +98,6 @@ public class PaymentService {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        }
-    }
-
-    @Transactional
-    public void saveOrderItems(String orderId, List<OrderItem> items) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        for (OrderItem item : items) {
-            item.setOrder(order);
-            orderItemRepository.save(item);
         }
     }
 }

@@ -7,6 +7,7 @@ import com.salessavvy.backend.dto.LoginRequest;
 import com.salessavvy.backend.entity.User;
 import com.salessavvy.backend.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,22 +25,26 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @Value("${cookie.secure}")
+    private boolean cookieSecure;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+
         try {
             User user = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
             String token = authService.generateToken(user);
 
             Cookie cookie = new Cookie("authToken", token);
             cookie.setHttpOnly(true);
-            cookie.setSecure(false); // Set to true if using HTTPS
+            cookie.setSecure(cookieSecure); // Set to true if using HTTPS
             cookie.setPath("/");
             cookie.setMaxAge(3600); // 1 hour
             response.addCookie(cookie);
 
             response.setHeader("Set-Cookie",
                     String.format("authToken=%s; Max-Age=3600; Path=/; HttpOnly; Secure=%s; SameSite=None",
-                            token, false));
+                            token, cookieSecure));
 
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("message", "Login successful");
