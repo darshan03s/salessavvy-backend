@@ -28,6 +28,9 @@ public class AuthController {
     @Value("${cookie.secure}")
     private boolean cookieSecure;
 
+    @Value("${cookie.domain}")
+    private String cookieDomain;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
 
@@ -39,12 +42,18 @@ public class AuthController {
             cookie.setHttpOnly(true);
             cookie.setSecure(cookieSecure); // Set to true if using HTTPS
             cookie.setPath("/");
+            if (!cookieDomain.isEmpty()) {
+                cookie.setDomain(cookieDomain);
+            }
             cookie.setMaxAge(3600); // 1 hour
             response.addCookie(cookie);
 
             response.setHeader("Set-Cookie",
-                    String.format("authToken=%s; Max-Age=3600; Path=/; HttpOnly; Secure=%s; SameSite=None",
-                            token, cookieSecure));
+                    String.format(
+                            "authToken=%s; Max-Age=3600; Path=/%s; HttpOnly; Secure=%s; SameSite=None",
+                            token,
+                            cookieDomain.isEmpty() ? "" : "; Domain=" + cookieDomain,
+                            cookieSecure));
 
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("message", "Login successful");
